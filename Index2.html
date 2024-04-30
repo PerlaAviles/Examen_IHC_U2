@@ -142,80 +142,93 @@
     <!-- Importa Bootstrap JS y otros scripts necesarios aquí si es necesario -->
 
    
-     <script>
-        // Función para obtener la última consulta de MockAPI
-        async function fetchRecentQuery() {
-            try {
-                const response = await fetch('https://6630830dc92f351c03da0ee6.mockapi.io/examen');
-                const data = await response.json();
-                return data[data.length - 1].Consulta;
-            } catch (error) {
-                console.error('Error al obtener la última consulta:', error);
-            }
-        }
+    <script>
+       const API_URL = 'https://6630830dc92f351c03da0ee6.mockapi.io/examen';
+const imagen = document.querySelector('.imagen img');
+let isAlarmActive = false;
 
-        // Función para modificar la imagen y el texto de acuerdo a la consulta reciente
-        async function modifyImageAndTextBasedOnQuery(command) {
-            // Modificar la imagen o GIF en el HTML
-            const housePlanImage = document.getElementById('housePlanImage');
-            switch (command) {
-                case 'Enciende la luz de la recámara':
-                    housePlanImage.src = 'Imageness/FocoOnC.gif';
-                    break;
-                case 'Apaga la luz de la recámara':
-                    housePlanImage.src = 'Imageness/1.png';
-                    break;
-                case 'Enciende la luz de la sala':
-                    housePlanImage.src = 'Imageness/FocoOnS.gif';
-                    break;
-                case 'Apaga la luz de la sala':
-                    housePlanImage.src = 'Imageness/1.png';
-                    break;
-                case 'Enciende las luces del jardín':
-                    housePlanImage.src = 'Imageness/FocoOnJ.gif';
-                    break;
-                case 'Apaga las luces del jardín':
-                    housePlanImage.src = 'Imageness/1.png';
-                    break;
-                case 'Enciende el ventilador':
-                    housePlanImage.src = 'Imageness/ventilador.gif';
-                    break;
-                case 'Apaga el ventilador':
-                    housePlanImage.src = 'Imageness/1.png';
-                    break;
-                case 'Abre las cortinas':
-                    housePlanImage.src = 'Imageness/cortina1';
-                    break;
-                case 'Cierra las cortinas':
-                    housePlanImage.src = 'Imageness/1.png';
-                    break;
-                case 'Activa la alarma de la casa':
-                    housePlanImage.src = 'images/alarma-activada.gif';
-                    break;
-                case 'Desactiva la alarma de la casa':
-                    housePlanImage.src = 'images/alarma-desactivada.jpg';
-                    break;
-                case 'Enciende las cámaras de seguridad':
-                    housePlanImage.src = 'Imageness/camara.gif';
-                    break;
-                case 'Apaga las cámaras de seguridad':
-                    housePlanImage.src = 'Imageness/1.png';
-                    break;
-                default:
-                    console.error('Comando no reconocido:', command);
-            }
-            // Actualizar el texto de la última consulta
-            document.getElementById('lastQueryText').innerText = command;
-        }
+async function fetchLastOrder() {
+  try {
+    const response = await fetch(API_URL);
+    if (!response.ok) {
+      throw new Error('Error al obtener datos de la API');
+    }
+    const data = await response.json();
+    if (data.length === 0) {
+      throw new Error('No hay datos disponibles en la API');
+    }
+    const lastOrder = data[data.length - 1];
+    return lastOrder;
+  } catch (error) {
+    console.error(error.message);
+  }
+}
 
-        // Función para obtener la última consulta y modificar la imagen y el texto
-        async function executeRecentQuery() {
-            const recentQuery = await fetchRecentQuery();
-            modifyImageAndTextBasedOnQuery(recentQuery);
-        }
+function displayLastOrder(order) {
+  const lastOrderDiv = document.getElementById('last-order');
 
-        // Ejecutar la función para obtener y ejecutar la última consulta al cargar la página
-        executeRecentQuery();
+  if (order) {
+    lastOrderDiv.innerHTML = `Consulta: ${order.orden}<br><br>Fecha y Hora: ${order.fechaHora}`;
+
+    if (order.orden === 'Enciende la luz de la recámara.') {
+      imagen.src = 'Imageness/FocoOnC';
+    } else if (order.orden === 'Enciende la luz de la sala.') {
+      imagen.src = 'Imageness/FocoOnS.gif';
+    } else if (order.orden === 'Enciende las luces del jardín.') {
+      imagen.src = 'Imageness/FocoOnJ.gif';
+    } else if (order.orden === 'Enciende el ventilador.') {
+      imagen.src = 'Imageness/ventilador.gif';
+    } else if (order.orden === 'Abre las cortinas.') {
+      imagen.src = 'Imageness/cortina3.gif';
+      setTimeout(function() {
+        imagen.src = 'Imageness/3.png';
+      }, 2000);
+    } else if (order.orden === 'Enciende la alarma') {
+      if (!isAlarmActive) {
+        isAlarmActive = true;
+        // Reproducir el audio de la alarma en bucle
+        alarmAudio.loop = true;
+        alarmAudio.play();
+      }
+    } else if (order.orden === 'Enciende las cámaras de vigilancia.') {
+      imagen.src = 'Imageness/camaras.gif';
+    } else if (order.orden === 'Apaga la luz de la recámara.') {
+      imagen.src = 'Imageness/1.png';
+    } else if (order.orden === 'Apaga la luz de la sala.') {
+      imagen.src = 'Imageness/1.png';
+    } else if (order.orden === 'Apaga las luces del jardín.') {
+      imagen.src = 'Imageness/1.png';
+    } else if (order.orden === 'Cierra las cortinas.') {
+      imagen.src = 'Imageness/cortina2.gif';
+      setTimeout(function() {
+        imagen.src = 'Imageness/1.png';
+      }, 2000);
+    } else if (order.orden === 'Apaga la alarma.') {
+      if (isAlarmActive) {
+        isAlarmActive = false;
+        // Detener la reproducción del audio de la alarma
+        alarmAudio.pause();
+        alarmAudio.currentTime = 0;
+      }
+    } else if (order.orden === 'Apaga las cámaras de vigilancia.') {
+      imagen.src = 'Imageness/1.png';
+    }
+  } else {
+    lastOrderDiv.textContent = 'No se pudo obtener la última orden';
+  }
+}
+
+async function updateLastOrder() {
+  const lastOrder = await fetchLastOrder();
+  displayLastOrder(lastOrder);
+}
+
+// Actualiza la última orden cada 2 segundos
+setInterval(updateLastOrder, 2000);
+
+// Carga la última orden al cargar la página
+updateLastOrder();
+
     </script>
 </body>
 </html>
